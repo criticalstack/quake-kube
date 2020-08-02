@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quakejs
+spec:
+  selector:
+    matchLabels:
+      run: quakejs
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: quakejs
+    spec:
+      containers:
+      - command:
+        - q3
+        - server
+        - --config=/config/server.cfg
+        - --content-server=http://localhost:9090
+        - --maps=/config/maps.yaml
+        - --agree-eula
+        image: docker.io/criticalstack/quake:v1.0.0
+        imagePullPolicy: Always
+        name: server
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        volumeMounts:
+        - name: quake3-server-config
+          mountPath: /config
+        - name: quake3-content
+          mountPath: /assets
+      - command:
+        - q3
+        - content
+        - --seed-content-url=http://content.quakejs.com
+        image: docker.io/criticalstack/quake:v1.0.0
+        name: content-server
+        ports:
+        - containerPort: 9090
+        volumeMounts:
+        - name: quake3-content
+          mountPath: /assets
+      volumes:
+        - name: quake3-server-config
+          configMap:
+            name: default-quake3-server-config
+        - name: quake3-content
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quakejs
+spec:
+  type: NodePort
+  selector:
+    run: quakejs
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30001
+      name: client
+    - port: 27960
+      targetPort: 27960
+      nodePort: 30003
+      name: server
+    - port: 9090
+      targetPort: 9090
+      nodePort: 30002
+      name: content
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-quake3-server-config
+data:
+  server.cfg: |
+    seta sv_hostname "quakekube"
+    seta g_log ""
+    seta sv_maxclients 12
+    seta g_motd "Welcome to Critical Stack"
+    seta g_quadfactor 3
+    seta timelimit 15
+    seta fraglimit 25
+    seta g_weaponrespawn 3
+    seta g_inactivity 600
+    seta g_forcerespawn 0
+    seta rconpassword "changeme"
+  maps.yaml: |
+    - name: q3dm7
+      type: FreeForAll
+    - name: q3dm17
+      type: FreeForAll
+    - name: q3wctf1
+      type: CaptureTheFlag
+      captureLimit: 8
+    - name: q3tourney2
+      type: Tournament
+    - name: q3wctf3
+      type: CaptureTheFlag
+      captureLimit: 8
+    - name: ztn3tourney1
+      type: Tournament

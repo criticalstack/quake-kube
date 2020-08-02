@@ -1,0 +1,151 @@
+{{define "index"}}<!DOCTYPE html>
+<html>
+  <head>
+    <title>QuakeJS Local</title>
+    <link rel="stylesheet" href="game.css"></link>
+    <script type="text/javascript" src="ioquake3.js"></script>
+    <link rel="apple-touch-icon" sizes="57x57" href="/images/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/images/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/images/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/images/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/images/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/images/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/images/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/images/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/images/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/images/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+    <script type="text/javascript">
+      function getQueryCommands() {
+        var search = /([^&=]+)/g;
+        var query  = window.location.search.substring(1);
+
+        var args = [];
+
+        var match;
+        while (match = search.exec(query)) {
+          var val = decodeURIComponent(match[1]);
+          val = val.split(' ');
+          val[0] = '+' + val[0];
+          args.push.apply(args, val);
+        }
+
+        return args;
+      }
+
+      window.onload = function () {
+        function resizeViewport() {
+          if (!ioq3.canvas) {
+            // ignore if the canvas hasn't yet initialized
+            return;
+          }
+          if ((document['webkitFullScreenElement'] || document['webkitFullscreenElement'] ||
+                document['mozFullScreenElement'] || document['mozFullscreenElement'] ||
+                document['fullScreenElement'] || document['fullscreenElement'])) {
+            // ignore resize events due to going fullscreen
+            return;
+          }
+          ioq3.setCanvasSize(ioq3.viewport.offsetWidth, ioq3.viewport.offsetHeight);
+        }
+
+        ioq3.viewport = document.getElementById('viewport-frame');
+        ioq3.elementPointerLock = true;
+        ioq3.exitHandler = function (err) {
+          if (err) {
+            var form = document.createElement('form');
+            form.setAttribute('method', 'POST');
+            form.setAttribute('action', '/');
+
+            var hiddenField = document.createElement('input');
+            hiddenField.setAttribute('type', 'hidden');
+            hiddenField.setAttribute('name', 'error');
+            hiddenField.setAttribute('value', err);
+            form.appendChild(hiddenField);
+
+            document.body.appendChild(form);
+            form.submit();
+            return;
+          }
+
+          window.location.href = '/';
+        }
+
+        window.addEventListener('resize', resizeViewport);
+      };
+    </script>
+    <style>
+      .centered {
+        position: fixed;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -60%); 
+        z-index: 1;
+      }
+      .form input[type=text] {
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        box-shadow: inset 0 1px 3px #ddd;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 16px;
+        padding-bottom: 16px;
+      }
+      .button {
+        background-color: #fe121e;
+        border: none;
+        color: white;
+        padding: 16px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main">
+      <div id="bg"></div>
+      <div class="centered">
+        <form class="form">
+          <input type="text" id="playerName">
+          <button onclick="join()" type="submit" class="button">Join</button>
+        </form>
+        <script type="text/javascript">
+          placeholder = "enter player name"
+          if (localStorage.playerName) {
+            placeholder = localStorage.playerName
+          }
+          document.getElementById("playerName").placeholder = placeholder
+          function join(){
+            var inputPlayerName = document.getElementById("playerName");
+						if (inputPlayerName.value != "") {
+               localStorage.setItem("playerName", inputPlayerName.value);
+						}
+            host = document.location.host
+            if (!host.includes(":")) { host = host + ":80" }
+            var args = ['+set', 'fs_cdn', host, '+connect', host];
+						args.push.apply(args, ['+set', 'cl_allowDownload', '1'])
+						args.push.apply(args, ['+name', localStorage.playerName])
+            args.push.apply(args, getQueryCommands());
+            var element = document.getElementById("main");
+            element.parentNode.removeChild(element);
+            ioq3.callMain(args);
+          }
+        </script>
+      </div>
+    </div>
+    
+    <div id="viewport-frame"></div>
+  </body>
+</html>
+{{end}}
