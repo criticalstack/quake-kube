@@ -3,13 +3,11 @@ package server
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/url"
-	"path/filepath"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"sigs.k8s.io/yaml"
 
 	quakeclient "github.com/criticalstack/quake-kube/internal/quake/client"
 	"github.com/criticalstack/quake-kube/internal/quake/content"
@@ -26,7 +24,7 @@ var opts struct {
 	AcceptEula    bool
 	AssetsDir     string
 	ConfigFile    string
-	Maps          string
+	WatchInterval time.Duration
 }
 
 func NewCommand() *cobra.Command {
@@ -63,45 +61,19 @@ func NewCommand() *cobra.Command {
 			if err := httputil.GetUntil(opts.ContentServer, ctx.Done()); err != nil {
 				return err
 			}
+
+			// TODO(chrism): only download what is in map config
 			if err := content.CopyAssets(csurl, opts.AssetsDir); err != nil {
 				return err
 			}
-			if err := writeDefaultServerConfig(filepath.Join(opts.AssetsDir, "baseq3/server.cfg")); err != nil {
-				return err
-			}
-			if opts.ConfigFile != "" {
-				data, err := ioutil.ReadFile(opts.ConfigFile)
-				if err != nil {
-					return err
-				}
-				if err := ioutil.WriteFile(filepath.Join(opts.AssetsDir, "baseq3/server.cfg"), data, 0644); err != nil {
-					return err
-				}
-			}
-
-			if err := writeDefaultMapConfig(filepath.Join(opts.AssetsDir, "baseq3/maps.cfg")); err != nil {
-				return err
-			}
-			if opts.Maps != "" {
-				data, err := ioutil.ReadFile(opts.Maps)
-				if err != nil {
-					return err
-				}
-				var maps quakeserver.Maps
-				if err := yaml.Unmarshal(data, &maps); err != nil {
-					return err
-				}
-				data, err = maps.Marshal()
-				if err != nil {
-					return err
-				}
-				if err := ioutil.WriteFile(filepath.Join(opts.AssetsDir, "baseq3/maps.cfg"), data, 0644); err != nil {
-					return err
-				}
-			}
 
 			go func() {
-				if err := quakeserver.Start(ctx, opts.AssetsDir); err != nil {
+				s := quakeserver.Server{
+					Dir:           opts.AssetsDir,
+					WatchInterval: opts.WatchInterval,
+					ConfigFile:    opts.ConfigFile,
+				}
+				if err := s.Start(ctx); err != nil {
 					panic(err)
 				}
 			}()
@@ -129,26 +101,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&opts.AssetsDir, "assets-dir", "assets", "location for game files")
 	cmd.Flags().StringVar(&opts.ClientAddr, "client-addr", "", "client address <host>:<port>")
 	cmd.Flags().StringVar(&opts.ServerAddr, "server-addr", "", "dedicated server <host>:<port>")
-	cmd.Flags().StringVar(&opts.Maps, "maps", "", "map rotation")
+	cmd.Flags().DurationVar(&opts.WatchInterval, "watch-interval", 15*time.Second, "dedicated server <host>:<port>")
 	return cmd
-}
-
-func writeDefaultMapConfig(path string) error {
-	maps := quakeserver.Maps{
-		{Name: "q3dm7", Type: quakeserver.FreeForAll},
-		{Name: "q3dm17", Type: quakeserver.FreeForAll},
-	}
-	data, err := maps.Marshal()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(path, data, 0644)
-}
-
-func writeDefaultServerConfig(path string) error {
-	data, err := quakeserver.Default().Marshal()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(path, data, 0644)
 }
