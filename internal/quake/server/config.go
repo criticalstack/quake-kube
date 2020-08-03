@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type GameType int
@@ -57,21 +58,24 @@ func (gt *GameType) UnmarshalText(data []byte) error {
 }
 
 type Config struct {
-	FragLimit int           `name:"fraglimit"`
-	TimeLimit time.Duration `name:"timelimit"`
+	FragLimit int             `name:"fraglimit"`
+	TimeLimit metav1.Duration `name:"timelimit"`
 
-	GameConfig
-	ServerConfig
+	GameConfig       `json:"game"`
+	FileServerConfig `json:"fs"`
+	ServerConfig     `json:"server"`
+
+	Maps
 }
 
 type GameConfig struct {
-	ForceRespawn  bool          `name:"g_forcerespawn"`
-	GameType      GameType      `name:"g_gametype"`
-	Inactivity    time.Duration `name:"g_inactivity"`
-	Log           string        `name:"g_log"`
-	MOTD          string        `name:"g_motd"`
-	QuadFactor    int           `name:"g_quadfactor"`
-	WeaponRespawn int           `name:"g_weaponrespawn"`
+	ForceRespawn  bool            `name:"g_forcerespawn"`
+	GameType      GameType        `json:"type" name:"g_gametype"`
+	Inactivity    metav1.Duration `name:"g_inactivity"`
+	Log           string          `name:"g_log"`
+	MOTD          string          `name:"g_motd"`
+	QuadFactor    int             `name:"g_quadfactor"`
+	WeaponRespawn int             `name:"g_weaponrespawn"`
 }
 
 type FileServerConfig struct {
@@ -117,6 +121,14 @@ func writeStruct(v reflect.Value) ([]byte, error) {
 				return nil, err
 			}
 			b.Write(data)
+		case reflect.Slice:
+			switch val := fv.Interface().(type) {
+			case Maps:
+				data, _ := val.Marshal()
+				b.Write(data)
+			default:
+				panic(fmt.Errorf("received unknown type %T", val))
+			}
 		default:
 			tv, ok := v.Type().Field(i).Tag.Lookup("name")
 			if !ok {
@@ -142,7 +154,7 @@ func toString(name string, v reflect.Value) string {
 		return val
 	case int:
 		return strconv.Itoa(val)
-	case time.Duration:
+	case metav1.Duration:
 		switch name {
 		case "TimeLimit":
 			return fmt.Sprintf("%d", int(val.Minutes()))
@@ -156,6 +168,9 @@ func toString(name string, v reflect.Value) string {
 		return "0"
 	case GameType:
 		return fmt.Sprintf("%d", val)
+	case Maps:
+		data, _ := val.Marshal()
+		return string(data)
 	default:
 		panic(fmt.Errorf("received unknown type %T", v.Interface()))
 	}
@@ -163,15 +178,15 @@ func toString(name string, v reflect.Value) string {
 
 func Default() *Config {
 	return &Config{
-		TimeLimit: 15 * time.Minute,
 		FragLimit: 25,
+		TimeLimit: metav1.Duration{Duration: 15 * time.Minute},
 		GameConfig: GameConfig{
 			Log:           "",
 			MOTD:          "Welcome to Critical Stack",
 			QuadFactor:    3,
 			GameType:      FreeForAll,
 			WeaponRespawn: 3,
-			Inactivity:    10 * time.Minute,
+			Inactivity:    metav1.Duration{Duration: 10 * time.Minute},
 			ForceRespawn:  false,
 		},
 		ServerConfig: ServerConfig{
@@ -179,7 +194,20 @@ func Default() *Config {
 			Hostname:   "quakekube",
 			Password:   "changeme",
 		},
+		Maps: Maps{
+			{Name: "q3dm7", Type: FreeForAll},
+			{Name: "q3dm17", Type: FreeForAll},
+		},
 	}
+}
+
+type Map struct {
+	Name string   `json:"name"`
+	Type GameType `json:"type"`
+
+	CaptureLimit int           `json:"captureLimit"`
+	FragLimit    int           `json:"fragLimit"`
+	TimeLimit    time.Duration `json:"timeLimit"`
 }
 
 type Maps []Map
@@ -209,13 +237,4 @@ func (maps Maps) Marshal() ([]byte, error) {
 	}
 	b.WriteString("vstr d0")
 	return b.Bytes(), nil
-}
-
-type Map struct {
-	Name string   `json:"name"`
-	Type GameType `json:"type"`
-
-	CaptureLimit int           `json:"captureLimit"`
-	FragLimit    int           `json:"fragLimit"`
-	TimeLimit    time.Duration `json:"timeLimit"`
 }

@@ -9,7 +9,7 @@ q3: gen
 gen: ## Generate and embed templates
 	@go run tools/genstatic.go public public
 
-VERSION ?= v1.0.0
+VERSION ?= v1.0.1
 IMAGE   ?= docker.io/criticalstack/quake:$(VERSION)
 
 .PHONY: build
