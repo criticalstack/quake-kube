@@ -34,9 +34,7 @@ The Quake 3 dedicated server requires an End-User License Agreement be agreed to
 
 ## Configuration
 
-### Server configuration
-
-The server configuration is set by ConfigMap that is mounted to the container:
+The server and maps are configured via ConfigMap that is mounted to the container:
 
 ```yaml
 apiVersion: v1
@@ -44,41 +42,35 @@ kind: ConfigMap
 metadata:
   name: quake3-server-config
 data:
-  server.cfg: |
-    seta sv_hostname "quakekube"
-    seta g_log ""
-    seta sv_maxclients 12
-    seta g_motd "Welcome to Critical Stack"
-    seta g_quadfactor 3
-    seta timelimit 15
-    seta fraglimit 25
-    seta g_weaponrespawn 3
-    seta g_inactivity 600
-    seta g_forcerespawn 0
-    seta rconpassword "changeme"
+  fragLimit: 25
+  timeLimit: 15m
+  game:
+    motd: "Welcome to Critical Stack"
+    type: FreeForAll
+    forceRespawn: false
+    inactivity: 10m
+    quadFactor: 3
+    weaponRespawn: 3
+  server:
+    hostname: "quakekube"
+    maxClients: 12
+    password: "changeme"
+  maps:
+  - name: q3dm7
+    type: FreeForAll
+  - name: q3dm17
+    type: FreeForAll
+  - name: q3wctf1
+    type: CaptureTheFlag
+    captureLimit: 8
+  - name: q3tourney2
+    type: Tournament
+  - name: q3wctf3
+    type: CaptureTheFlag
+    captureLimit: 8
+  - name: ztn3tourney1
+    type: Tournament
 ```
-
-Many of the config values seen [here](http://www.joz3d.net/html/q3console.html) will likely work, but be careful to not create an invalid server configuration (causing the pod to crash).
-
-### Maps
-
-The maps are configured via the server configuration ConfigMap by specifying a maps file that can be mounted into the container:
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: quake3-server-config
-data:
-  ...
-  maps.yaml: |
-    - name: q3dm7
-      type: FreeForAll
-    - name: q3dm17
-      type: FreeForAll
-```
-
-These values are then used when specifying container arguments in the Kubernetes Deployment via `--maps`. For example usage,  be sure to check out the [example.yaml](example.yaml) manifest.
 
 The time limit and frag limit can be specified with each map (it will change it for subsequent maps in the list):
 
@@ -97,9 +89,9 @@ Capture limit for CTF maps can also be configured:
   captureLimit: 8
 ```
 
-## Add new maps
+### Add custom maps
 
-The content server hosts a small upload app to allow uploading `pk3` or `zip` files containing maps. The server must be restarted after maps have been added to be available. Currently, this happens after the map rotates to one of the previously loaded maps, however, in the future the server will respond to changes to the ConfigMap automatically.
+The content server hosts a small upload app to allow uploading `pk3` or `zip` files containing maps. The content server in the [example.yaml](example.yaml) shares a volume with the game server, effectively "side-loading" the map content, however, in the future the game server will introspect into the maps and make sure that it can fulfill the users map configuration before starting.
 
 ## Credits
 
