@@ -19,7 +19,7 @@ spec:
         - --config=/config/config.yaml
         - --content-server=http://localhost:9090
         - --agree-eula
-        image: docker.io/criticalstack/quake:v1.0.1
+        image: docker.io/criticalstack/quake:v1.0.2
         name: server
         ports:
         - containerPort: 8080
@@ -37,7 +37,7 @@ spec:
         - q3
         - content
         - --seed-content-url=http://content.quakejs.com
-        image: docker.io/criticalstack/quake:v1.0.1
+        image: docker.io/criticalstack/quake:v1.0.2
         name: content-server
         ports:
         - containerPort: 9090

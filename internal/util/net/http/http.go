@@ -18,6 +18,10 @@ func GetBody(url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.Errorf("cannot get url %q: %v", url, http.StatusText(resp.StatusCode))
+	}
+
 	return ioutil.ReadAll(resp.Body)
 }
 
