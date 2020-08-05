@@ -15,7 +15,7 @@ var global struct {
 	Verbosity int
 }
 
-func NewRootCommand() *cobra.Command {
+func main() {
 	cmd := &cobra.Command{
 		Use:   "q3",
 		Short: "",
@@ -28,11 +28,8 @@ func NewRootCommand() *cobra.Command {
 	)
 
 	cmd.PersistentFlags().CountVarP(&global.Verbosity, "verbose", "v", "log output verbosity")
-	return cmd
-}
 
-func main() {
-	if err := NewRootCommand().Execute(); err != nil {
+	if err := cmd.Execute(); err != nil {
 		log.Fatal(err)
 	}
 }

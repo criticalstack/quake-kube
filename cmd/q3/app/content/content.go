@@ -21,9 +21,10 @@ var opts struct {
 
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          "content",
-		Short:        "q3 content server",
-		SilenceUsage: true,
+		Use:           "content",
+		Short:         "q3 content server",
+		SilenceErrors: true,
+		SilenceUsage:  true,
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			if !filepath.IsAbs(opts.AssetsDir) {
 				opts.AssetsDir, err = filepath.Abs(opts.AssetsDir)

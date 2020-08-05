@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	httputil "github.com/criticalstack/quake-kube/internal/util/net/http"
+	"github.com/pkg/errors"
 )
 
 func CopyAssets(u *url.URL, dir string) error {
@@ -60,7 +61,7 @@ func getManifest(url string) ([]*File, error) {
 
 	files := make([]*File, 0)
 	if err := json.Unmarshal(data, &files); err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "cannot unmarshal %s/assets/manifest.json", url)
 	}
 	return files, nil
 }
