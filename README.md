@@ -4,6 +4,17 @@ QuakeKube is a Kubernetes-ified version of [QuakeJS](https://github.com/inolen/q
 
 ## Quick start
 
+### With an existing K8s cluster
+
+Deploy the example manifest:
+
+```shell
+$ kubectl apply -f https://raw.githubusercontent.com/criticalstack/quake-kube/master/example.yaml
+```
+
+
+### Without an existing K8s cluster
+
 Start an instance of Kubernetes locally using cinder (or kind):
 
 ```shell
