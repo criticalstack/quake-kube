@@ -53,36 +53,35 @@ kind: ConfigMap
 metadata:
   name: quake3-server-config
 data:
-  fragLimit: 25
-  timeLimit: 15m
-  game:
-    motd: "Welcome to Critical Stack"
-    type: FreeForAll
-    forceRespawn: false
-    inactivity: 10m
-    quadFactor: 3
-    weaponRespawn: 3
-  server:
-    hostname: "quakekube"
-    maxClients: 12
-    password: "changeme"
-  commands:
-  - seta g_inactivity 600
-  maps:
-  - name: q3dm7
-    type: FreeForAll
-  - name: q3dm17
-    type: FreeForAll
-  - name: q3wctf1
-    type: CaptureTheFlag
-    captureLimit: 8
-  - name: q3tourney2
-    type: Tournament
-  - name: q3wctf3
-    type: CaptureTheFlag
-    captureLimit: 8
-  - name: ztn3tourney1
-    type: Tournament
+  config.yaml: |
+    fragLimit: 25
+    timeLimit: 15m
+    game:
+      motd: "Welcome to Critical Stack"
+      type: FreeForAll
+      forceRespawn: false
+      inactivity: 10m
+      quadFactor: 3
+      weaponRespawn: 3
+    server:
+      hostname: "quakekube"
+      maxClients: 12
+      password: "changeme"
+    maps:
+    - name: q3dm7
+      type: FreeForAll
+    - name: q3dm17
+      type: FreeForAll
+    - name: q3wctf1
+      type: CaptureTheFlag
+      captureLimit: 8
+    - name: q3tourney2
+      type: Tournament
+    - name: q3wctf3
+      type: CaptureTheFlag
+      captureLimit: 8
+    - name: ztn3tourney1
+      type: Tournament
 ```
 
 The time limit and frag limit can be specified with each map (it will change it for subsequent maps in the list):
@@ -114,6 +113,14 @@ commands:
 ### Add custom maps
 
 The content server hosts a small upload app to allow uploading `pk3` or `zip` files containing maps. The content server in the [example.yaml](example.yaml) shares a volume with the game server, effectively "side-loading" the map content, however, in the future the game server will introspect into the maps and make sure that it can fulfill the users map configuration before starting.
+
+### Development
+
+The easiest way to develop quake-kube is building the binary locally with `make` and running it directly. This only requires that you have the `ioq3ded` binary in your path:
+
+```shell
+$ bin/q3 -c config.yaml --assets-dir $HOME/.q3a --agree-eula
+```
 
 ## Credits
 
