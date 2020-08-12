@@ -22,6 +22,9 @@ server:
   hostname: "quakekube"
   maxClients: 12
   password: "changeme"
+commands:
+- seta g_inactivity 600
+- seta sv_timeout 120
 maps:
 - name: q3dm7
   type: FreeForAll
@@ -56,6 +59,8 @@ seta sv_allowDownload "0"
 seta sv_hostname "quakekube"
 seta sv_maxclients "12"
 seta rconpassword "changeme"
+seta g_inactivity 600
+seta sv_timeout 120
 set d0 "seta g_gametype 0 ; map q3dm7 ; set nextmap vstr d1"
 set d1 "seta g_gametype 0 ; map q3dm17 ; set nextmap vstr d2"
 set d2 "seta g_gametype 4 ; capturelimit 8 ; map q3wctf1 ; set nextmap vstr d3"

@@ -66,6 +66,8 @@ data:
     hostname: "quakekube"
     maxClients: 12
     password: "changeme"
+  commands:
+  - seta g_inactivity 600
   maps:
   - name: q3dm7
     type: FreeForAll
@@ -98,6 +100,15 @@ Capture limit for CTF maps can also be configured:
 - name: q3wctf3
   type: CaptureTheFlag
   captureLimit: 8
+```
+
+Any commands not captured by the config yaml can be specified in the `commands` section:
+
+```yaml
+commands:
+- seta g_inactivity 600
+- seta sv_timeout 120
+
 ```
 
 ### Add custom maps
