@@ -92,6 +92,8 @@ data:
       hostname: "quakekube"
       maxClients: 12
       password: "changeme"
+    commands:
+    - seta g_inactivity 600
     maps:
     - name: q3dm7
       type: FreeForAll

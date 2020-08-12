@@ -64,6 +64,7 @@ type Config struct {
 	GameConfig       `json:"game"`
 	FileServerConfig `json:"fs"`
 	ServerConfig     `json:"server"`
+	Commands         []string `json:"commands"`
 
 	Maps
 }
@@ -126,6 +127,9 @@ func writeStruct(v reflect.Value) ([]byte, error) {
 			case Maps:
 				data, _ := val.Marshal()
 				b.Write(data)
+			case []string:
+				data := strings.Join(val, "\n")
+				b.WriteString(fmt.Sprintf("%s\n", data))
 			default:
 				panic(fmt.Errorf("received unknown type %T", val))
 			}
@@ -180,6 +184,7 @@ func Default() *Config {
 	return &Config{
 		FragLimit: 25,
 		TimeLimit: metav1.Duration{Duration: 15 * time.Minute},
+		Commands:  []string{},
 		GameConfig: GameConfig{
 			Log:           "",
 			MOTD:          "Welcome to Critical Stack",
