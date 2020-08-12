@@ -1,17 +1,16 @@
 package client
 
 import (
-	"bytes"
 	"html/template"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	quakenet "github.com/criticalstack/quake-kube/internal/quake/net"
 )
 
 type Config struct {
@@ -53,40 +52,18 @@ func NewRouter(cfg *Config) (*echo.Echo, error) {
 		})
 	})
 
-	raddr, err := net.ResolveUDPAddr("udp", cfg.ServerAddr)
-	if err != nil {
-		return nil, err
-	}
-
 	e.GET("/info", func(c echo.Context) error {
-		conn, err := net.ListenPacket("udp", "0.0.0.0:0")
+		m, err := quakenet.GetInfo(cfg.ServerAddr)
 		if err != nil {
 			return err
 		}
-		defer conn.Close()
+		return c.JSON(http.StatusOK, m)
+	})
 
-		buffer := make([]byte, 1024*1024)
-		if err := conn.SetDeadline(time.Now().Add(5 * time.Second)); err != nil {
-			return err
-		}
-		n, err := conn.WriteTo([]byte("\xff\xff\xff\xffgetinfo xxx"), raddr)
+	e.GET("/status", func(c echo.Context) error {
+		m, err := quakenet.GetStatus(cfg.ServerAddr)
 		if err != nil {
 			return err
-		}
-		n, _, err = conn.ReadFrom(buffer)
-		if err != nil {
-			return err
-		}
-
-		resp := buffer[:n]
-		resp = bytes.TrimPrefix(resp, []byte("\xff\xff\xff\xffinfoResponse\n\\"))
-		resp = bytes.TrimSuffix(resp, []byte("\\xxx"))
-
-		parts := bytes.Split(resp, []byte("\\"))
-
-		m := make(map[string]string)
-		for i := 0; i < len(parts)-1; i += 2 {
-			m[string(parts[i])] = string(parts[i+1])
 		}
 		return c.JSON(http.StatusOK, m)
 	})
