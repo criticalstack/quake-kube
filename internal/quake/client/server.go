@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"time"
@@ -45,6 +46,9 @@ func (s *Server) Serve(l net.Listener) error {
 			panic(err)
 		}
 	}()
+
+	// TODO(ktravis): context, also configurable metrics poll interval
+	go s.pollStatusMetrics(context.TODO(), 5*time.Second)
 
 	return m.Serve()
 }

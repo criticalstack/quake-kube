@@ -11,6 +11,9 @@ spec:
     metadata:
       labels:
         run: quakejs
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8080'
     spec:
       containers:
       - command:
