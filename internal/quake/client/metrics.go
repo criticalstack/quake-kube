@@ -27,6 +27,7 @@ var (
 
 func (s *Server) pollStatusMetrics(ctx context.Context, interval time.Duration) {
 	tick := time.NewTicker(interval)
+	defer tick.Stop()
 	for {
 		select {
 		case <-tick.C:
