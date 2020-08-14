@@ -22,14 +22,17 @@ var (
 		Name: "quake_active_players",
 		Help: "The current number of active players",
 	})
+
 	scores = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "quake_player_scores",
 		Help: "Current scores by player, by map",
 	}, []string{"player", "map"})
+
 	pings = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "quake_player_pings",
 		Help: "Current ping by player",
 	}, []string{"player"})
+
 	configReloads = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "quake_config_reloads",
 		Help: "Config file reload count",
@@ -97,6 +100,7 @@ func (s *Server) Start(ctx context.Context) error {
 		}
 		tick := time.NewTicker(5 * time.Second)
 		defer tick.Stop()
+
 		for {
 			select {
 			case <-tick.C:
@@ -107,7 +111,9 @@ func (s *Server) Start(ctx context.Context) error {
 				}
 				actrvePlayers.Set(float64(len(status.Players)))
 				for _, p := range status.Players {
-					scores.WithLabelValues(p.Name, status.Configuration["mapname"]).Set(float64(p.Score))
+					if mapname, ok := status.Configuration["mapname"]; ok {
+						scores.WithLabelValues(p.Name, mapname).Set(float64(p.Score))
+					}
 					pings.WithLabelValues(p.Name).Set(float64(p.Ping))
 				}
 			case <-ctx.Done():
