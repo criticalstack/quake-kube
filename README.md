@@ -122,6 +122,17 @@ The easiest way to develop quake-kube is building the binary locally with `make`
 $ bin/q3 server -c config.yaml --assets-dir $HOME/.q3a --agree-eula
 ```
 
+### Multi-platform images
+
+Container images are being cross-compiled with [Docker Buildx](https://docs.docker.com/buildx/working-with-buildx/) so it can run on hardware with different architectures and operating systems. Currently, it is building for `linux/amd64` and `linux/arm64`. While not specifically compiling to the macOS platform (`darwin/amd64`) QuakeKube should also work on macOS and maybe even Windows. This is due to the fact that they both use a linux VM to provide container support.
+
+Docker Buildx uses [QEMU](https://www.qemu.org/) to virtualize non-native platforms, which has unfortunately had long-running issues running the Go compiler:
+
+* [golang/go#24656](https://github.com/golang/go/issues/24656)
+* [https://bugs.launchpad.net/qemu/+bug/1696773](https://bugs.launchpad.net/qemu/+bug/1696773)
+
+This issue is circumvented by ensuring that the Go compiler does not run across multiple hardware threads, which is why the affinity is being limited in the Dockerfile.
+
 ## Credits
 
 * [inolen/quakejs](https://github.com/inolen/quakejs) - The really awesome QuakeJS project that makes this possible.

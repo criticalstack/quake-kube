@@ -9,9 +9,13 @@ q3: gen
 gen: ## Generate and embed templates
 	@go run tools/genstatic.go public public
 
-VERSION ?= v1.0.2
+VERSION ?= v1.0.3
 IMAGE   ?= docker.io/criticalstack/quake:$(VERSION)
 
 .PHONY: build
 build:
 	@docker build . --force-rm --build-arg GOPROXY --build-arg GOSUMDB -t $(IMAGE)
+
+.PHONY: buildx
+buildx:
+	@docker buildx build . --platform=linux/amd64,linux/arm64 --progress=auto -t $(IMAGE) --push
