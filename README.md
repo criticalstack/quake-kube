@@ -119,7 +119,7 @@ The content server hosts a small upload app to allow uploading `pk3` or `zip` fi
 The easiest way to develop quake-kube is building the binary locally with `make` and running it directly. This only requires that you have the `ioq3ded` binary in your path:
 
 ```shell
-$ bin/q3 -c config.yaml --assets-dir $HOME/.q3a --agree-eula
+$ bin/q3 server -c config.yaml --assets-dir $HOME/.q3a --agree-eula
 ```
 
 ## Credits
