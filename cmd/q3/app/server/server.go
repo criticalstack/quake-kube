@@ -40,13 +40,7 @@ func NewCommand() *cobra.Command {
 				}
 				opts.ClientAddr = fmt.Sprintf("%s:8080", hostIPv4)
 			}
-			if opts.ServerAddr == "" {
-				hostIPv4, err := netutil.DetectHostIPv4()
-				if err != nil {
-					return err
-				}
-				opts.ServerAddr = fmt.Sprintf("%s:27960", hostIPv4)
-			}
+
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
@@ -72,6 +66,7 @@ func NewCommand() *cobra.Command {
 					Dir:           opts.AssetsDir,
 					WatchInterval: opts.WatchInterval,
 					ConfigFile:    opts.ConfigFile,
+					Addr:          opts.ServerAddr,
 				}
 				if err := s.Start(ctx); err != nil {
 					panic(err)
@@ -100,7 +95,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&opts.AcceptEula, "agree-eula", false, "agree to the Quake 3 demo EULA")
 	cmd.Flags().StringVar(&opts.AssetsDir, "assets-dir", "assets", "location for game files")
 	cmd.Flags().StringVar(&opts.ClientAddr, "client-addr", "", "client address <host>:<port>")
-	cmd.Flags().StringVar(&opts.ServerAddr, "server-addr", "", "dedicated server <host>:<port>")
+	cmd.Flags().StringVar(&opts.ServerAddr, "server-addr", "0.0.0.0:27960", "dedicated server <host>:<port>")
 	cmd.Flags().DurationVar(&opts.WatchInterval, "watch-interval", 15*time.Second, "dedicated server <host>:<port>")
 	return cmd
 }

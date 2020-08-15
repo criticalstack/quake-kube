@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
+	"net"
 	"os"
 	"path/filepath"
 	"time"
@@ -17,10 +18,24 @@ type Server struct {
 	Dir           string
 	WatchInterval time.Duration
 	ConfigFile    string
+	Addr          string
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	cmd := exec.CommandContext(ctx, "ioq3ded", "+set", "dedicated", "1", "+exec", "server.cfg")
+	if s.Addr == "" {
+		s.Addr = "0.0.0.0:27960"
+	}
+	host, port, err := net.SplitHostPort(s.Addr)
+	if err != nil {
+		return err
+	}
+	args := []string{
+		"+set", "dedicated", "1",
+		"+set", "net_ip", host,
+		"+set", "net_port", port,
+		"+exec", "server.cfg",
+	}
+	cmd := exec.CommandContext(ctx, "ioq3ded", args...)
 	cmd.Dir = s.Dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
