@@ -9,6 +9,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	quakenet "github.com/criticalstack/quake-kube/internal/quake/net"
 )
@@ -51,6 +52,8 @@ func NewRouter(cfg *Config) (*echo.Echo, error) {
 			"ServerAddr": cfg.ServerAddr,
 		})
 	})
+
+	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 
 	e.GET("/info", func(c echo.Context) error {
 		m, err := quakenet.GetInfo(cfg.ServerAddr)

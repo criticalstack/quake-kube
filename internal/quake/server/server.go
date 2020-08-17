@@ -9,9 +9,31 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"sigs.k8s.io/yaml"
 
+	quakenet "github.com/criticalstack/quake-kube/internal/quake/net"
 	"github.com/criticalstack/quake-kube/internal/util/exec"
+)
+
+var (
+	actrvePlayers = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "quake_active_players",
+		Help: "The current number of active players",
+	})
+	scores = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "quake_player_scores",
+		Help: "Current scores by player, by map",
+	}, []string{"player", "map"})
+	pings = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "quake_player_pings",
+		Help: "Current ping by player",
+	}, []string{"player"})
+	configReloads = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "quake_config_reloads",
+		Help: "Config file reload count",
+	})
 )
 
 type Server struct {
@@ -68,6 +90,32 @@ func (s *Server) Start(ctx context.Context) error {
 		}
 	}()
 
+	go func() {
+		addr := s.Addr
+		if net.ParseIP(host).IsUnspecified() {
+			addr = net.JoinHostPort("127.0.0.1", port)
+		}
+		tick := time.NewTicker(5 * time.Second)
+		defer tick.Stop()
+		for {
+			select {
+			case <-tick.C:
+				status, err := quakenet.GetStatus(addr)
+				if err != nil {
+					log.Printf("metrics: get status failed %v", err)
+					continue
+				}
+				actrvePlayers.Set(float64(len(status.Players)))
+				for _, p := range status.Players {
+					scores.WithLabelValues(p.Name, status.Configuration["mapname"]).Set(float64(p.Score))
+					pings.WithLabelValues(p.Name).Set(float64(p.Ping))
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
 	ch, err := s.watch(ctx)
 	if err != nil {
 		return err
@@ -79,6 +127,7 @@ func (s *Server) Start(ctx context.Context) error {
 			if err := s.reload(); err != nil {
 				return err
 			}
+			configReloads.Inc()
 			if err := cmd.Restart(ctx); err != nil {
 				return err
 			}
