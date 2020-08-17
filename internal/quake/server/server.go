@@ -30,6 +30,10 @@ var (
 		Name: "quake_player_pings",
 		Help: "Current ping by player",
 	}, []string{"player"})
+	configReloads = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "quake_config_reloads",
+		Help: "Config file reload count",
+	})
 )
 
 type Server struct {
@@ -123,6 +127,7 @@ func (s *Server) Start(ctx context.Context) error {
 			if err := s.reload(); err != nil {
 				return err
 			}
+			configReloads.Inc()
 			if err := cmd.Restart(ctx); err != nil {
 				return err
 			}
