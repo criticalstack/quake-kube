@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	activeConns = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "quake_active_connections",
-		Help: "The current number of active websocket proxy connections",
+	actrvePlayers = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "quake_active_players",
+		Help: "The current number of active players",
 	})
 	scores = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "quake_player_scores",
@@ -105,7 +105,7 @@ func (s *Server) Start(ctx context.Context) error {
 					log.Printf("metrics: get status failed %v", err)
 					continue
 				}
-				activeConns.Set(float64(len(status.Players)))
+				actrvePlayers.Set(float64(len(status.Players)))
 				for _, p := range status.Players {
 					scores.WithLabelValues(p.Name, status.Configuration["mapname"]).Set(float64(p.Score))
 					pings.WithLabelValues(p.Name).Set(float64(p.Ping))
