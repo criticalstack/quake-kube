@@ -32,7 +32,16 @@ func (s *Server) Serve(l net.Listener) error {
 		}
 	}()
 
-	wsproxy, err := NewProxy(s.ServerAddr)
+	host, port, err := net.SplitHostPort(s.ServerAddr)
+	if err != nil {
+		return err
+	}
+	proxyTarget := s.ServerAddr
+	if net.ParseIP(host).IsUnspecified() {
+		// handle case where host is 0.0.0.0
+		proxyTarget = net.JoinHostPort("127.0.0.1", port)
+	}
+	wsproxy, err := NewProxy(proxyTarget)
 	if err != nil {
 		return err
 	}
