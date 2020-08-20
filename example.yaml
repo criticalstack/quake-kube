@@ -22,7 +22,7 @@ spec:
         - --config=/config/config.yaml
         - --content-server=http://localhost:9090
         - --agree-eula
-        image: docker.io/criticalstack/quake:v1.0.3
+        image: docker.io/criticalstack/quake:v1.0.4
         name: server
         ports:
         - containerPort: 8080
@@ -40,7 +40,7 @@ spec:
         - q3
         - content
         - --seed-content-url=http://content.quakejs.com
-        image: docker.io/criticalstack/quake:v1.0.3
+        image: docker.io/criticalstack/quake:v1.0.4
         name: content-server
         ports:
         - containerPort: 9090
@@ -84,6 +84,8 @@ data:
   config.yaml: |
     fragLimit: 25
     timeLimit: 15m
+    bot:
+      minPlayers: 3
     game:
       motd: "Welcome to Critical Stack"
       type: FreeForAll
@@ -96,10 +98,11 @@ data:
       maxClients: 12
       password: "changeme"
     commands:
-    - seta g_inactivity 600
+      - addbot sarge 2
     maps:
     - name: q3dm7
       type: FreeForAll
+      timeLimit: 10m
     - name: q3dm17
       type: FreeForAll
     - name: q3wctf1

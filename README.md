@@ -107,8 +107,48 @@ Any commands not captured by the config yaml can be specified in the `commands` 
 commands:
 - seta g_inactivity 600
 - seta sv_timeout 120
-
 ```
+
+### Add bots
+
+Bots can be added individually to map rotations using the `commands` section of the config:
+
+```yaml
+commands:
+  - addbot crash 1
+  - addbot sarge 2
+```
+
+The `addbot` server command requires the name of the bot and skill level (crash and sarge are a couple of the built-in bots).
+
+Another way to add bots is by setting a minimum number of players to allow the server to add bots up to a certain value (removed when human players join):
+
+```yaml
+bot:
+  minPlayers: 8
+game:
+  singlePlayerSkill: 2
+```
+
+`singlePlayerSkill` can be used to set the skill level of the automatically added bots (2 is the default skill level).
+
+### Setting a password
+
+A password should be set for the server to allow remote administration and is found in the server configuration settings:
+
+```yaml
+server:
+  password: "changeme"
+```
+
+This will allow clients to use `\rcon changeme <cmd>` to remotely administrate the server. To create a password that must be provided by clients to connect:
+
+```yaml
+game:
+  password: "letmein"
+```
+
+This will add an additional dialog to the in-browser client to accept the password. It will only appear if the server indicates it needs a password.
 
 ### Add custom maps
 
