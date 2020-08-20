@@ -153,7 +153,7 @@ func (s *Server) reload() error {
 	if err != nil {
 		return err
 	}
-	var cfg *Config
+	cfg := Default()
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return err
 	}

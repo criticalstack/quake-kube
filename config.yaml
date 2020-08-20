@@ -1,19 +1,25 @@
 fragLimit: 25
 timeLimit: 15m
+bot:
+  minPlayers: 3
 game:
   motd: "Welcome to Critical Stack"
   type: FreeForAll
   forceRespawn: false
   inactivity: 10m
+  #password: "letmein"
   quadFactor: 3
   weaponRespawn: 3
 server:
   hostname: "quakekube"
-  maxClients: 12
+  maxClients: 16
   password: "changeme"
+commands:
+  - addbot sarge 2
 maps:
 - name: q3dm7
   type: FreeForAll
+  timeLimit: 10m
 - name: q3dm17
   type: FreeForAll
 - name: q3wctf1

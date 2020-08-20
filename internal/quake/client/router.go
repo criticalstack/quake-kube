@@ -48,8 +48,19 @@ func NewRouter(cfg *Config) (*echo.Echo, error) {
 
 	// default route
 	e.GET("/", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "index", map[string]string{
+		m, err := quakenet.GetInfo(cfg.ServerAddr)
+		if err != nil {
+			return err
+		}
+		needsPass := false
+		if v, ok := m["g_needpass"]; ok {
+			if v == "1" {
+				needsPass = true
+			}
+		}
+		return c.Render(http.StatusOK, "index", map[string]interface{}{
 			"ServerAddr": cfg.ServerAddr,
+			"NeedsPass":  needsPass,
 		})
 	})
 

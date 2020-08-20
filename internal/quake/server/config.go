@@ -61,6 +61,7 @@ type Config struct {
 	FragLimit int             `name:"fraglimit"`
 	TimeLimit metav1.Duration `name:"timelimit"`
 
+	BotConfig        `json:"bot"`
 	GameConfig       `json:"game"`
 	FileServerConfig `json:"fs"`
 	ServerConfig     `json:"server"`
@@ -69,14 +70,21 @@ type Config struct {
 	Maps
 }
 
+type BotConfig struct {
+	MinPlayers int  `name:"bot_minplayers"`
+	NoChat     bool `name:"bot_nochat"`
+}
+
 type GameConfig struct {
-	ForceRespawn  bool            `name:"g_forcerespawn"`
-	GameType      GameType        `json:"type" name:"g_gametype"`
-	Inactivity    metav1.Duration `name:"g_inactivity"`
-	Log           string          `name:"g_log"`
-	MOTD          string          `name:"g_motd"`
-	QuadFactor    int             `name:"g_quadfactor"`
-	WeaponRespawn int             `name:"g_weaponrespawn"`
+	ForceRespawn      bool            `name:"g_forcerespawn"`
+	GameType          GameType        `json:"type" name:"g_gametype"`
+	Inactivity        metav1.Duration `name:"g_inactivity"`
+	Log               string          `name:"g_log"`
+	MOTD              string          `name:"g_motd"`
+	Password          string          `name:"g_password"`
+	QuadFactor        int             `name:"g_quadfactor"`
+	SinglePlayerSkill int             `name:"g_spSkill"`
+	WeaponRespawn     int             `name:"g_weaponrespawn"`
 }
 
 type FileServerConfig struct {
@@ -128,8 +136,6 @@ func writeStruct(v reflect.Value) ([]byte, error) {
 				data, _ := val.Marshal()
 				b.Write(data)
 			case []string:
-				data := strings.Join(val, "\n")
-				b.WriteString(fmt.Sprintf("%s\n", data))
 			default:
 				panic(fmt.Errorf("received unknown type %T", val))
 			}
@@ -146,6 +152,15 @@ func writeStruct(v reflect.Value) ([]byte, error) {
 				}
 			default:
 				b.WriteString(fmt.Sprintf("seta %s %s\n", tv, strconv.Quote(s)))
+			}
+		}
+	}
+	for i := 0; i < v.Type().NumField(); i++ {
+		if v.Type().Field(i).Name == "Commands" {
+			cmds := v.Field(i).Interface().([]string)
+			for _, cmd := range cmds {
+				b.WriteString(cmd)
+				b.WriteString("\n")
 			}
 		}
 	}
@@ -185,14 +200,18 @@ func Default() *Config {
 		FragLimit: 25,
 		TimeLimit: metav1.Duration{Duration: 15 * time.Minute},
 		Commands:  []string{},
+		BotConfig: BotConfig{
+			NoChat: true,
+		},
 		GameConfig: GameConfig{
-			Log:           "",
-			MOTD:          "Welcome to Critical Stack",
-			QuadFactor:    3,
-			GameType:      FreeForAll,
-			WeaponRespawn: 3,
-			Inactivity:    metav1.Duration{Duration: 10 * time.Minute},
-			ForceRespawn:  false,
+			Log:               "",
+			MOTD:              "Welcome to Critical Stack",
+			QuadFactor:        3,
+			GameType:          FreeForAll,
+			WeaponRespawn:     3,
+			Inactivity:        metav1.Duration{Duration: 10 * time.Minute},
+			SinglePlayerSkill: 2,
+			ForceRespawn:      false,
 		},
 		ServerConfig: ServerConfig{
 			MaxClients: 12,
@@ -210,9 +229,9 @@ type Map struct {
 	Name string   `json:"name"`
 	Type GameType `json:"type"`
 
-	CaptureLimit int           `json:"captureLimit"`
-	FragLimit    int           `json:"fragLimit"`
-	TimeLimit    time.Duration `json:"timeLimit"`
+	CaptureLimit int             `json:"captureLimit"`
+	FragLimit    int             `json:"fragLimit"`
+	TimeLimit    metav1.Duration `json:"timeLimit"`
 }
 
 type Maps []Map
@@ -229,8 +248,8 @@ func (maps Maps) Marshal() ([]byte, error) {
 		if m.FragLimit != 0 {
 			cmds = append(cmds, fmt.Sprintf("fraglimit %d", m.FragLimit))
 		}
-		if m.TimeLimit != 0 {
-			cmds = append(cmds, fmt.Sprintf("timelimit %d", int(m.TimeLimit.Minutes())))
+		if m.TimeLimit.Duration != 0 {
+			cmds = append(cmds, fmt.Sprintf("timelimit %s", toString("TimeLimit", reflect.ValueOf(m.TimeLimit))))
 		}
 		cmds = append(cmds, fmt.Sprintf("map %s", m.Name))
 		nextmap := "d0"
@@ -240,6 +259,6 @@ func (maps Maps) Marshal() ([]byte, error) {
 		cmds = append(cmds, fmt.Sprintf("set nextmap vstr %s", nextmap))
 		b.WriteString(fmt.Sprintf("set d%d \"seta %s\"\n", i, strings.Join(cmds, " ; ")))
 	}
-	b.WriteString("vstr d0")
+	b.WriteString("vstr d0\n")
 	return b.Bytes(), nil
 }

@@ -87,7 +87,7 @@
         transform: translate(-50%, -60%); 
         z-index: 1;
       }
-      .form input[type=text] {
+      .form input[type=text], [type=password] {
         margin: 8px 0;
         display: inline-block;
         border: 1px solid #ccc;
@@ -118,6 +118,9 @@
       <div class="centered">
         <form class="form">
           <input type="text" id="playerName">
+          {{ with .NeedsPass }}
+            <input type="password" placeholder="password" id="password">
+          {{ end }}
           <button onclick="join()" type="submit" class="button">Join</button>
         </form>
         <script type="text/javascript">
@@ -128,15 +131,19 @@
           document.getElementById("playerName").placeholder = placeholder
           function join(){
             var inputPlayerName = document.getElementById("playerName");
-						if (inputPlayerName.value != "") {
+            if (inputPlayerName.value != "") {
                localStorage.setItem("playerName", inputPlayerName.value);
-						}
+            }
             host = document.location.host
             if (!host.includes(":")) { host = host + ":80" }
             var args = ['+set', 'fs_cdn', host, '+connect', host];
-						args.push.apply(args, ['+set', 'cl_allowDownload', '1'])
-						args.push.apply(args, ['+name', localStorage.playerName])
+            args.push.apply(args, ['+set', 'cl_allowDownload', '1'])
+            args.push.apply(args, ['+name', localStorage.playerName])
             args.push.apply(args, getQueryCommands());
+            var inputPassword = document.getElementById("password");
+            if (inputPassword && inputPassword.value != "") {
+               args.push.apply(args, ['+set', 'password', inputPassword.value]);
+            }
             var element = document.getElementById("main");
             element.parentNode.removeChild(element);
             ioq3.callMain(args);
