@@ -12,7 +12,6 @@ import (
 	quakeclient "github.com/criticalstack/quake-kube/internal/quake/client"
 	"github.com/criticalstack/quake-kube/internal/quake/content"
 	quakeserver "github.com/criticalstack/quake-kube/internal/quake/server"
-	netutil "github.com/criticalstack/quake-kube/internal/util/net"
 	httputil "github.com/criticalstack/quake-kube/internal/util/net/http"
 	"github.com/criticalstack/quake-kube/public"
 )
@@ -33,14 +32,6 @@ func NewCommand() *cobra.Command {
 		Short:        "q3 server",
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.ClientAddr == "" {
-				hostIPv4, err := netutil.DetectHostIPv4()
-				if err != nil {
-					return err
-				}
-				opts.ClientAddr = fmt.Sprintf("%s:8080", hostIPv4)
-			}
-
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
@@ -94,7 +85,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&opts.ContentServer, "content-server", "http://content.quakejs.com", "content server url")
 	cmd.Flags().BoolVar(&opts.AcceptEula, "agree-eula", false, "agree to the Quake 3 demo EULA")
 	cmd.Flags().StringVar(&opts.AssetsDir, "assets-dir", "assets", "location for game files")
-	cmd.Flags().StringVar(&opts.ClientAddr, "client-addr", "", "client address <host>:<port>")
+	cmd.Flags().StringVar(&opts.ClientAddr, "client-addr", "0.0.0.0:8080", "client address <host>:<port>")
 	cmd.Flags().StringVar(&opts.ServerAddr, "server-addr", "0.0.0.0:27960", "dedicated server <host>:<port>")
 	cmd.Flags().DurationVar(&opts.WatchInterval, "watch-interval", 15*time.Second, "dedicated server <host>:<port>")
 	return cmd

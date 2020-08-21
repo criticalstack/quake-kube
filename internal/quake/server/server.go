@@ -58,6 +58,9 @@ func (s *Server) Start(ctx context.Context) error {
 		"+set", "dedicated", "1",
 		"+set", "net_ip", host,
 		"+set", "net_port", port,
+		"+set", "com_homepath", s.Dir,
+		"+set", "com_basegame", "baseq3",
+		"+set", "com_gamename", "Quake3Arena",
 		"+exec", "server.cfg",
 	}
 	cmd := exec.CommandContext(ctx, "ioq3ded", args...)

@@ -23,8 +23,8 @@ func (s *Server) Serve(l net.Listener) error {
 		s := &http.Server{
 			Addr:           s.Addr,
 			Handler:        s.Handler,
-			ReadTimeout:    10 * time.Second,
-			WriteTimeout:   10 * time.Second,
+			ReadTimeout:    5 * time.Minute,
+			WriteTimeout:   5 * time.Minute,
 			MaxHeaderBytes: 1 << 20,
 		}
 		if err := s.Serve(httpL); err != cmux.ErrListenerClosed {
