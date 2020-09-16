@@ -10,7 +10,7 @@ import (
 
 func GetBody(url string) ([]byte, error) {
 	client := http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 5 * time.Minute,
 	}
 	resp, err := client.Get(url)
 	if err != nil {

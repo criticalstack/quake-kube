@@ -17,7 +17,7 @@ FROM alpine:3.12 as quake-n-bake
 
 RUN apk add --no-cache git gcc make libc-dev
 RUN git clone https://github.com/ioquake/ioq3
-RUN cd /ioq3 && make BUILD_MISSIONPACK=0 BUILD_BASEGAME=0 BUILD_CLIENT=0 BUILD_SERVER=1 BUILD_GAME_SO=0 BUILD_GAME_QVM=0 BUILD_RENDERER_OPENGL2=0
+RUN cd /ioq3 && make BUILD_MISSIONPACK=0 BUILD_BASEGAME=0 BUILD_CLIENT=0 BUILD_SERVER=1 BUILD_GAME_SO=0 BUILD_GAME_QVM=0 BUILD_RENDERER_OPENGL2=0 BUILD_STANDALONE=1
 RUN cp /ioq3/build/release-linux-$(uname -m)/ioq3ded.$(uname -m) /usr/local/bin/ioq3ded
 
 FROM alpine:3.12
