@@ -15225,7 +15225,7 @@ function copyTempDouble(ptr) {
   			//var root = SYSC.GetCDN();
   			var root = Pointer_stringify(_Cvar_VariableString(allocate(intArrayFromString('fs_cdn'), 'i8', ALLOC_STACK)));
   			var name = asset.name.replace(/(.+\/|)(.+?)$/, '$1' + asset.checksum + '-$2');
-  			var url = 'http://' + root + '/assets/' + name;
+  			var url = document.location.protocol + '//' + root + '/assets/' + name;
   
   			SYS.DoXHR(url, {
   				dataType: 'arraybuffer',
@@ -15274,9 +15274,9 @@ function copyTempDouble(ptr) {
   			var fs_cdn = Pointer_stringify(_Cvar_VariableString(allocate(intArrayFromString('fs_cdn'), 'i8', ALLOC_STACK)));
   			var fs_game = Pointer_stringify(_Cvar_VariableString(allocate(intArrayFromString('fs_game'), 'i8', ALLOC_STACK)));
   			var com_basegame = Pointer_stringify(_Cvar_VariableString(allocate(intArrayFromString('com_basegame'), 'i8', ALLOC_STACK)));
-        var url = 'http://' + fs_cdn + '/assets/manifest.json';
+        var url = document.location.protocol + '//' + fs_cdn + '/assets/manifest.json';
   
-  			SYS.DoXHR('http://' + fs_cdn + '/info', {
+  			SYS.DoXHR(document.location.protocol + '//' + fs_cdn + '/info', {
   				dataType: 'json',
   				onload: function (err, info) {
   					var mapname = info["mapname"];
