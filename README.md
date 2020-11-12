@@ -15,7 +15,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/criticalstack/quake-kube/ma
 
 ### Without an existing K8s cluster
 
-Start an instance of Kubernetes locally using cinder (or kind):
+Start an instance of Kubernetes locally using [cinder](https://docs.crit.sh/cinder-guide/what-is-cinder.html) (or [kind](https://kind.sigs.k8s.io/)):
 
 ```shell
 $ cinder create cluster
