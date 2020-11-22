@@ -135,7 +135,7 @@
                localStorage.setItem("playerName", inputPlayerName.value);
             }
             host = document.location.host
-            if (!host.includes(":")) { host = host + ":80" }
+            if (!host.includes(":")) { host = host + (window.location.protocol == 'https:' ? ":443" : ":80") }
             var args = ['+set', 'fs_cdn', host, '+connect', host];
             args.push.apply(args, ['+set', 'cl_allowDownload', '1'])
             args.push.apply(args, ['+set', 'cl_timeout', '15'])
