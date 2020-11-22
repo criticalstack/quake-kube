@@ -1,3 +1,5 @@
+![Build Status](https://github.com/criticalstack/quake-kube/workflows/Push%20Image/badge.svg)
+
 # QuakeKube
 
 QuakeKube is a Kubernetes-ified version of [QuakeJS](https://github.com/inolen/quakejs) that runs a dedicated [Quake 3](https://en.wikipedia.org/wiki/Quake_III_Arena) server in a Kubernetes Deployment, and then allow clients to connect via QuakeJS in the browser.

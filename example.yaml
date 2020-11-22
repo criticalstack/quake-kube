@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: quakejs
+  name: quake
 spec:
   selector:
     matchLabels:
-      run: quakejs
+      run: quake
   replicas: 1
   template:
     metadata:
       labels:
-        run: quakejs
+        run: quake
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8080'
@@ -20,9 +20,9 @@ spec:
         - q3
         - server
         - --config=/config/config.yaml
-        - --content-server=http://localhost:9090
+        - --content-server=http://127.0.0.1:9090
         - --agree-eula
-        image: docker.io/criticalstack/quake:v1.0.5
+        image: docker.io/criticalstack/quake:latest
         name: server
         ports:
         - containerPort: 8080
@@ -40,7 +40,7 @@ spec:
         - q3
         - content
         - --seed-content-url=http://content.quakejs.com
-        image: docker.io/criticalstack/quake:v1.0.5
+        image: docker.io/criticalstack/quake:latest
         name: content-server
         ports:
         - containerPort: 9090
@@ -57,11 +57,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: quakejs
+  name: quake
 spec:
   type: NodePort
   selector:
-    run: quakejs
+    run: quake
   ports:
     - port: 8080
       targetPort: 8080

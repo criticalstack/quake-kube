@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -55,10 +56,7 @@ func NewRouter(cfg *Config) (*echo.Echo, error) {
 		return c.JSONPretty(http.StatusOK, files, "   ")
 	})
 	e.GET("/assets/*", func(c echo.Context) error {
-		path := filepath.Join(cfg.AssetsDir, c.Param("*"))
-		d, f := filepath.Split(path)
-		f = f[strings.Index(f, "-")+1:]
-		path = filepath.Join(d, f)
+		path := filepath.Join(cfg.AssetsDir, trimAssetName(c.Param("*")))
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return c.String(http.StatusNotFound, "file not found")
 		}
@@ -130,4 +128,12 @@ func NewRouter(cfg *Config) (*echo.Echo, error) {
 		return c.HTML(http.StatusOK, fmt.Sprintf("<p>File %s uploaded successfully.</p>", filepath.Join(name, file.Filename)))
 	})
 	return e, nil
+}
+
+var assetPattern = regexp.MustCompile(`(\d+-)`)
+
+// trimAssetName returns a path string that has been prefixed with a crc32
+// checksum.
+func trimAssetName(s string) string {
+	return assetPattern.ReplaceAllLiteralString(s, "")
 }
