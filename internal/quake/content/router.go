@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -130,10 +129,10 @@ func NewRouter(cfg *Config) (*echo.Echo, error) {
 	return e, nil
 }
 
-var assetPattern = regexp.MustCompile(`(\d+-)`)
-
 // trimAssetName returns a path string that has been prefixed with a crc32
 // checksum.
 func trimAssetName(s string) string {
-	return assetPattern.ReplaceAllLiteralString(s, "")
+	d, f := filepath.Split(s)
+	f = f[strings.Index(f, "-")+1:]
+	return filepath.Join(d, f)
 }
