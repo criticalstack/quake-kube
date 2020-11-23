@@ -19,3 +19,7 @@ build:
 .PHONY: buildx
 buildx:
 	@docker buildx build . --platform=linux/amd64,linux/arm64 --progress=auto -t $(IMAGE) --push
+
+.PHONY: test
+test:
+	@go test -v ./internal/...
